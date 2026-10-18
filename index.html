@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#151322">
+  <meta name="description" content="銀綾式タロットのブラインド三枚抽選器。紙に問いを書いてから、過去・現在・未来の三枚を公平に選びます。">
+  <title>銀綾式タロット｜三枚の神託</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --night: #151322;
+      --deep: #201b32;
+      --panel: rgba(31, 28, 47, .91);
+      --gold: #e5c99a;
+      --gold-bright: #f5dfb5;
+      --ink: #f4edf2;
+      --muted: #c8bdcc;
+      --hairline: rgba(233, 207, 166, .25);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    html { min-height: 100%; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 51% -12%, rgba(108, 77, 125, .4), transparent 53%),
+        radial-gradient(ellipse at 14% 87%, rgba(73, 72, 122, .28), transparent 43%),
+        radial-gradient(ellipse at 100% 90%, rgba(110, 60, 80, .20), transparent 43%),
+        var(--night);
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Kaku Gothic ProN", "Yu Gothic", Meiryo, sans-serif;
+      line-height: 1.7;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .32;
+      background-image: radial-gradient(circle, #f5e7c7 0.75px, transparent 1px);
+      background-size: 57px 73px;
+      mask-image: linear-gradient(to bottom, #000, transparent 77%);
+    }
+    main { position: relative; max-width: 760px; margin: 0 auto; padding: 54px 22px 76px; }
+    header { text-align: center; }
+    .eyebrow { color: var(--gold); font-size: .71rem; letter-spacing: .27em; text-transform: uppercase; margin: 0 0 15px; }
+    .seal {
+      width: 66px; height: 66px; display: grid; place-items: center; margin: 0 auto 16px;
+      color: var(--gold-bright); font-family: Georgia, serif; font-size: 1.7rem;
+      border: 1px solid var(--hairline); border-radius: 50%;
+      box-shadow: inset 0 0 0 6px rgba(229, 201, 154, .035), 0 0 36px rgba(229, 201, 154, .06);
+    }
+    h1 {
+      font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif CJK JP", serif;
+      font-weight: 500; font-size: clamp(2rem, 6.3vw, 3.1rem); letter-spacing: .11em;
+      margin: 0 0 6px;
+    }
+    .subtitle { color: var(--gold); letter-spacing: .2em; font-size: .8rem; margin: 0; }
+    .lede { color: var(--muted); font-size: .94rem; text-align: center; max-width: 550px; margin: 25px auto 34px; }
+    .rule { height: 1px; background: linear-gradient(to right, transparent, var(--hairline), transparent); margin-bottom: 32px; }
+    .stage {
+      border: 1px solid var(--hairline);
+      background: var(--panel);
+      border-radius: 22px;
+      box-shadow: 0 18px 65px rgba(0, 0, 0, .20);
+      padding: clamp(18px, 4.2vw, 40px);
+    }
+    .step { margin: 0; color: var(--gold); letter-spacing: .16em; font-size: .74rem; text-align: center; }
+    h2 { font-family: "Hiragino Mincho ProN", "Yu Mincho", serif; font-size: 1.33rem; font-weight: 500; text-align: center; letter-spacing: .065em; margin: 5px 0 12px; }
+    .instructions { color: var(--muted); text-align: center; font-size: .91rem; max-width: 510px; margin: 0 auto 28px; }
+    .spread { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: clamp(8px,2.2vw,18px); }
+    .slot { min-width: 0; }
+    .card {
+      min-height: 204px; aspect-ratio: 5/7;
+      position: relative; display: flex; align-items: center; justify-content: center;
+      border-radius: 13px;
+      background: linear-gradient(135deg, #29243a, #191629 61%, #30273b);
+      border: 1px solid rgba(229, 201, 154, .49);
+      box-shadow: inset 0 0 0 5px rgba(17, 14, 27, .8), inset 0 0 0 6px rgba(229, 201, 154, .24), 0 10px 22px rgba(0, 0, 0, .19);
+      overflow: hidden;
+    }
+    .card::before { content: ""; position: absolute; inset: 16px; border: 1px solid rgba(229,201,154,.23); border-radius: 90px 90px 9px 9px; }
+    .card::after { content: "✧"; position: absolute; top: 14px; color: rgba(245,223,181,.73); font-size: .8rem; }
+    .card .placeholder { font-family: Georgia, serif; font-size: clamp(2.6rem, 8vw, 4.2rem); font-weight: 400; color: rgba(235,206,165,.67); }
+    .card .symbol { display: none; font-family: Georgia, serif; font-size: clamp(2.4rem, 7vw, 4rem); color: var(--gold-bright); line-height: 1; }
+    .card .bit { display: none; position: absolute; bottom: 23px; color: var(--gold); font-size: .8rem; letter-spacing: .14em; }
+    .card.revealed { background: radial-gradient(ellipse at 50% 43%, rgba(116,93,137,.43), transparent 72%), linear-gradient(135deg, #332a46, #211b32); }
+    .card.revealed .placeholder { display: none; }
+    .card.revealed .symbol, .card.revealed .bit { display: block; }
+    .slot-label { color: var(--gold); text-align: center; font-size: .81rem; letter-spacing: .18em; margin: 13px 0 0; }
+    .main-action, .copy-action {
+      display: block; width: min(100%, 350px); margin: 31px auto 0;
+      padding: 14px 20px; border: 1px solid #efdbc0; border-radius: 999px;
+      background: linear-gradient(100deg, #f3dfbc, #e4c497);
+      color: #292033; font-weight: 700; font-size: .98rem; letter-spacing: .13em;
+      cursor: pointer; box-shadow: 0 6px 25px rgba(227,194,147,.18);
+      transition: transform .15s, filter .15s;
+    }
+    .main-action:hover, .copy-action:hover { filter: brightness(1.06); transform: translateY(-1px); }
+    .main-action:focus-visible, .copy-action:focus-visible, .new-question:focus-visible { outline: 3px solid #fbebcc; outline-offset: 4px; }
+    .main-action:disabled, .copy-action:disabled { cursor: not-allowed; opacity: .65; }
+    .main-action:disabled:hover, .copy-action:disabled:hover { transform: none; filter: none; }
+    .result-panel { display: none; margin-top: 29px; }
+    .result-panel.visible { display: block; }
+    .result-caption { color: var(--muted); text-align: center; font-size: .88rem; margin: 0 0 12px; }
+    #output {
+      width: 100%; resize: vertical; min-height: 135px;
+      border: 1px solid var(--hairline); border-radius: 12px;
+      padding: 15px 20px; background: #151423; color: #f8f0e7;
+      font-size: .94rem; line-height: 1.9;
+      font-family: inherit;
+    }
+    .copy-action { margin-top: 16px; }
+    .copy-status { min-height: 23px; color: var(--gold); font-size: .83rem; text-align: center; margin: 9px 0 0; }
+    .new-question {
+      display: block; background: transparent; color: var(--muted);
+      border: none; text-decoration: underline; text-underline-offset: 4px;
+      font-size: .83rem; cursor: pointer; margin: 22px auto 0; padding: 8px;
+    }
+    .helper { color: #aaa2b4; text-align: center; margin: 24px auto 0; max-width: 525px; font-size: .78rem; }
+    .error { color: #ffd9d7; font-size: .85rem; text-align: center; margin: 15px 0 0; }
+    footer { text-align: center; color: #a8a0b4; margin-top: 28px; font-size: .74rem; line-height: 1.9; }
+    footer .brand { color: var(--gold); letter-spacing: .14em; }
+    [hidden] { display: none !important; }
+    @media (max-width: 520px) {
+      main { padding: 35px 15px 55px; }
+      .lede { font-size: .86rem; }
+      .stage { padding: 22px 13px; }
+      .card { min-height: 137px; border-radius: 10px; }
+      .card::before { inset: 10px; }
+      .card .bit { bottom: 14px; }
+      .slot-label { font-size: .73rem; }
+      .instructions { font-size: .86rem; }
+    }
+    @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="seal" aria-hidden="true">✦</div>
+      <p class="eyebrow">Ginaya · Three-card draw</p>
+      <h1>三枚の神託</h1>
+      <p class="subtitle">銀 綾 式 タ ロ ッ ト</p>
+      <p class="lede">問いを胸に、三枚を迎える。<br>選ばれた記号の意味は、次の鑑定で明らかになります。</p>
+    </header>
+    <div class="rule" aria-hidden="true"></div>
+    <section class="stage" aria-labelledby="draw-heading">
+      <p class="step">THE RITUAL</p>
+      <h2 id="draw-heading">問いを紙に記してください</h2>
+      <p class="instructions">占いたいことを一つ決め、紙に書いてください。<br>書き終えたら、下のボタンを一度だけ押します。<br>質問をここに入力する必要はありません。</p>
+      <div class="spread" aria-label="三枚の抽選位置">
+        <div class="slot"><div class="card" id="card-0"><span class="placeholder" aria-hidden="true">✦</span><span class="symbol" id="symbol-0"></span><span class="bit" id="bit-0"></span></div><p class="slot-label">過去</p></div>
+        <div class="slot"><div class="card" id="card-1"><span class="placeholder" aria-hidden="true">✦</span><span class="symbol" id="symbol-1"></span><span class="bit" id="bit-1"></span></div><p class="slot-label">現在</p></div>
+        <div class="slot"><div class="card" id="card-2"><span class="placeholder" aria-hidden="true">✦</span><span class="symbol" id="symbol-2"></span><span class="bit" id="bit-2"></span></div><p class="slot-label">未来</p></div>
+      </div>
+      <button type="button" id="draw" class="main-action">三枚を引く</button>
+      <p id="error" class="error" role="alert" hidden></p>
+      <div class="result-panel" id="result-panel" aria-live="polite">
+        <p class="result-caption">これが、あなたの一度きりの抽選結果です。</p>
+        <textarea id="output" aria-label="鑑定用の抽選結果" readonly spellcheck="false"></textarea>
+        <button type="button" id="copy" class="copy-action">鑑定用の結果をコピー</button>
+        <p id="copy-status" class="copy-status" role="status"></p>
+        <button type="button" id="new-question" class="new-question">別の問いで、新しく始める</button>
+      </div>
+      <p class="helper">このページは記号を選ぶだけの抽選器です。カードの名前や意味、あなたが紙に書いた質問は扱いません。記号は次の鑑定工程で解読されます。</p>
+    </section>
+    <footer><span class="brand">銀綾式タロット</span><br>抽選はお使いのブラウザ内で行います。入力内容を送信する仕組みはありません。</footer>
+  </main>
+  <script>
+    'use strict';
+    const LETTERS = [...'ABCDEFGHIJKLMNOPQRSTUV'];
+    const PLACES = ['過去', '現在', '未来'];
+    const STORAGE_KEY = 'ginaya-three-card-draw-v1';
+    const drawButton = document.getElementById('draw');
+    const resultPanel = document.getElementById('result-panel');
+    const output = document.getElementById('output');
+    const error = document.getElementById('error');
+    const copyStatus = document.getElementById('copy-status');
+    let current = null;
+
+    // Rejection sampling prevents the modulo bias of a raw 32-bit remainder.
+    function randomBelow(bound) {
+      if (!globalThis.crypto || typeof crypto.getRandomValues !== 'function') {
+        throw new Error('このブラウザでは安全な乱数を利用できません。HTTPSの公開ページから開いてください。');
+      }
+      const range = 0x100000000;
+      const limit = Math.floor(range / bound) * bound;
+      const values = new Uint32Array(1);
+      do { crypto.getRandomValues(values); } while (values[0] >= limit);
+      return values[0] % bound;
+    }
+
+    function drawThree() {
+      const pool = LETTERS.slice();
+      const results = [];
+      for (let i = 0; i < 3; i++) {
+        const idx = randomBelow(pool.length);
+        const letter = pool.splice(idx, 1)[0];
+        const bit = randomBelow(2);
+        results.push({ letter, bit });
+      }
+      return results;
+    }
+
+    function isValid(results) {
+      return Array.isArray(results) && results.length === 3 &&
+        results.every(r => r && LETTERS.includes(r.letter) && (r.bit === 0 || r.bit === 1)) &&
+        new Set(results.map(r => r.letter)).size === 3;
+    }
+
+    function formatResult(results) {
+      return '【銀綾式タロット｜三枚抽選結果】\n' +
+        results.map((r, i) => `${PLACES[i]}：${r.letter}-${r.bit}`).join('\n');
+    }
+
+    function showResults(results) {
+      current = results;
+      results.forEach((r, i) => {
+        document.getElementById(`symbol-${i}`).textContent = r.letter;
+        document.getElementById(`bit-${i}`).textContent = `— ${r.bit} —`;
+        document.getElementById(`card-${i}`).classList.add('revealed');
+      });
+      output.value = formatResult(results);
+      resultPanel.classList.add('visible');
+      drawButton.hidden = true;
+      copyStatus.textContent = '';
+    }
+
+    function reset() {
+      current = null;
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) { /* Storage may be unavailable. */ }
+      for (let i = 0; i < 3; i++) {
+        document.getElementById(`card-${i}`).classList.remove('revealed');
+        document.getElementById(`symbol-${i}`).textContent = '';
+        document.getElementById(`bit-${i}`).textContent = '';
+      }
+      resultPanel.classList.remove('visible');
+      drawButton.hidden = false;
+      output.value = '';
+      copyStatus.textContent = '';
+      error.hidden = true;
+    }
+
+    drawButton.addEventListener('click', () => {
+      if (current) return;
+      error.hidden = true;
+      try {
+        const results = drawThree();
+        if (!isValid(results)) throw new Error('抽選結果の検証に失敗しました。');
+        showResults(results);
+        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(results)); } catch (_) { /* Still works without storage. */ }
+      } catch (err) {
+        error.textContent = err.message || '抽選できませんでした。';
+        error.hidden = false;
+      }
+    });
+
+    document.getElementById('copy').addEventListener('click', async () => {
+      if (!current) return;
+      try {
+        await navigator.clipboard.writeText(output.value);
+        copyStatus.textContent = 'コピーしました。鑑定用のチャットに貼り付けてください。';
+      } catch (_) {
+        output.focus();
+        output.select();
+        copyStatus.textContent = '文章を選択しました。コピーして鑑定用のチャットに貼り付けてください。';
+      }
+    });
+
+    document.getElementById('new-question').addEventListener('click', () => {
+      if (confirm('別の問いを始めますか？ 現在の抽選結果は消去されます。')) reset();
+    });
+
+    try {
+      const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY));
+      if (isValid(saved)) showResults(saved);
+    } catch (_) { /* No stored draw. */ }
+  </script>
+</body>
+</html>
